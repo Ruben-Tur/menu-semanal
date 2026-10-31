@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <title>menu-semanal</title>
+  <rect width="512" height="512" rx="112" fill="#9a5a2a"/>
+  <rect x="136" y="100" width="240" height="312" rx="24" fill="#fbf3ea"/>
+  <rect x="136" y="100" width="240" height="44" rx="22" fill="#f0dcc6"/>
+  <rect x="172" y="176" width="44" height="44" rx="10" fill="#9a5a2a"/>
+  <path d="M182 198l10 10 16-18" fill="none" stroke="#fbf3ea" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="236" y="191" width="104" height="14" rx="7" fill="#d8b896"/>
+  <rect x="176" y="248" width="36" height="36" rx="8" fill="none" stroke="#9a5a2a" stroke-width="8"/>
+  <rect x="236" y="259" width="84" height="14" rx="7" fill="#9a5a2a"/>
+  <rect x="176" y="316" width="36" height="36" rx="8" fill="none" stroke="#9a5a2a" stroke-width="8"/>
+  <rect x="236" y="327" width="100" height="14" rx="7" fill="#9a5a2a"/>
+</svg>

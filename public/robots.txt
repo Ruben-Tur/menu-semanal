@@ -1,0 +1,6 @@
+# menu-semanal: la app es pública; los datos de cada persona viven solo en su navegador.
+User-agent: *
+Allow: /
+Disallow: /offline.html
+
+Sitemap: __SITE_URL__/sitemap.xml

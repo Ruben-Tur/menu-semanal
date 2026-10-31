@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Planificador de menús semanales y lista de la compra · menu-semanal</title>
+  <meta name="description" content="Planifica la comida y la cena de la semana con tus recetas y genera la lista de la compra por pasillos. Gratis, funciona sin conexión y sin cuentas.">
+  <link rel="canonical" href="__SITE_URL__/">
+  <meta name="robots" content="index, follow">
+  <meta name="author" content="Rubén Tur">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#fdfbf8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#141412" media="(prefers-color-scheme: dark)">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Menú semanal">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+  <link rel="icon" href="/icons/icon-192.png" sizes="192x192" type="image/png">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="menu-semanal">
+  <meta property="og:locale" content="es_ES">
+  <meta property="og:title" content="Planificador de menús semanales y lista de la compra">
+  <meta property="og:description" content="Organiza las comidas de la semana y genera la lista de la compra agrupada por pasillos. Funciona sin conexión y tus datos no salen del móvil.">
+  <meta property="og:url" content="__SITE_URL__/">
+  <meta property="og:image" content="__SITE_URL__/og.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Menú de la semana y lista de la compra agrupada por pasillos en menu-semanal">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Planificador de menús semanales y lista de la compra">
+  <meta name="twitter:description" content="Organiza las comidas de la semana y genera la lista de la compra agrupada por pasillos. Funciona sin conexión.">
+  <meta name="twitter:image" content="__SITE_URL__/og.png">
+
+  <link rel="stylesheet" href="/css/styles.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "menu-semanal · Planificador de menús semanales",
+    "alternateName": "Menú semanal",
+    "url": "__SITE_URL__/",
+    "description": "Aplicación web (PWA) para planificar la comida y la cena de cada día a partir de un recetario propio y generar la lista de la compra con las cantidades sumadas y agrupadas por pasillos del supermercado. Funciona sin conexión y guarda los datos solo en el dispositivo con IndexedDB.",
+    "applicationCategory": "LifestyleApplication",
+    "applicationSubCategory": "Planificación de comidas",
+    "operatingSystem": "Cualquiera con un navegador moderno (Android, iOS, Windows, macOS, Linux)",
+    "browserRequirements": "Requiere JavaScript, IndexedDB y Service Worker",
+    "inLanguage": "es-ES",
+    "isAccessibleForFree": true,
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+    "featureList": [
+      "Recetario propio con ingredientes, cantidades, unidades y pasillo",
+      "Menú semanal de comida y cena con raciones por comida",
+      "Lista de la compra que suma ingredientes repetidos y normaliza g/kg y ml/l",
+      "Agrupación por pasillos del supermercado",
+      "Funciona sin conexión e instalable como app",
+      "Copia de seguridad en JSON"
+    ],
+    "screenshot": "__SITE_URL__/og.png",
+    "image": "__SITE_URL__/icons/icon-512.png",
+    "author": { "@type": "Person", "name": "Rubén Tur", "url": "https://github.com/Ruben-Tur" }
+  }
+  </script>
+  <script type="module" src="/js/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#view">Saltar al contenido</a>
+
+  <header class="topbar">
+    <div class="topbar-inner wrap">
+      <a class="brand" href="#/semana" aria-label="menu-semanal, ir a la semana"><span class="brand-path">~/</span>menu-semanal<span class="brand-cursor" aria-hidden="true"></span></a>
+      <span id="estado-conexion" class="status" hidden><span class="status-dot" aria-hidden="true"></span>Sin conexión</span>
+      <nav class="tabs" aria-label="Secciones">
+        <a href="#/semana" data-nav="semana"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"/></svg><span>Semana</span></a>
+        <a href="#/recetas" data-nav="recetas"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4.5A1.5 1.5 0 0 1 6.5 3H19v15H6.5A1.5 1.5 0 0 0 5 19.5v-15ZM5 19.5A1.5 1.5 0 0 0 6.5 21H19M9 7h6"/></svg><span>Recetas</span></a>
+        <a href="#/compra" data-nav="compra"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 4h2l2.2 10.2a1 1 0 0 0 1 .8h8.9a1 1 0 0 0 1-.8L20 8H6.2M9 20h.01M17 20h.01"/></svg><span>Compra</span></a>
+        <a href="#/datos" data-nav="datos"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 3c4.4 0 8 1.3 8 3s-3.6 3-8 3-8-1.3-8-3 3.6-3 8-3ZM4 6v6c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg><span>Tus datos</span></a>
+      </nav>
+    </div>
+  </header>
+
+  <div id="actualizacion" class="update-banner wrap" role="status" hidden></div>
+
+  <main class="wrap">
+    <section class="intro" aria-labelledby="titulo">
+      <h1 id="titulo">Planificador de menús semanales</h1>
+      <p class="intro-summary">Organiza la comida y la cena de cada día con tus propias recetas y genera la lista de la compra con las cantidades sumadas y agrupadas por pasillos del súper. Funciona sin conexión y tus datos no salen del dispositivo.</p>
+      <details class="intro-more">
+        <summary>Qué puedes hacer</summary>
+        <ul>
+          <li><strong>Recetario propio:</strong> recetas con ingredientes, cantidad, unidad y pasillo del súper. Empieza con nueve recetas de ejemplo.</li>
+          <li><strong>Menú de la semana:</strong> comida y cena de lunes a domingo, con las raciones de cada comida.</li>
+          <li><strong>Lista de la compra automática:</strong> suma lo que se repite (250 g + 1 kg = 1,25 kg), la ordena por pasillos y se tacha mientras compras.</li>
+          <li><strong>Sin conexión:</strong> se instala en el móvil como una app y funciona en el supermercado aunque no haya cobertura.</li>
+          <li><strong>Privada:</strong> sin cuentas ni servidor de datos. Todo se guarda en el navegador y puedes descargar una copia en JSON.</li>
+        </ul>
+      </details>
+    </section>
+
+    <div id="view" class="view" tabindex="-1">
+      <noscript><p class="notice">Esta app necesita JavaScript para guardar tus recetas y tu menú en el dispositivo. Actívalo para usarla.</p></noscript>
+      <p class="loading">Cargando tu menú…</p>
+    </div>
+  </main>
+
+  <footer class="footer wrap">
+    <p>Hecho por <a href="https://github.com/Ruben-Tur" rel="author">Rubén Tur</a> · Tus datos se quedan en este dispositivo</p>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>

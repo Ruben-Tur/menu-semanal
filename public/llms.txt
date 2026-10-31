@@ -1,0 +1,28 @@
+# menu-semanal · Planificador de menús semanales
+
+> Aplicación web gratuita (PWA) para planificar la comida y la cena de cada día de la semana a partir de un recetario propio y generar automáticamente la lista de la compra, con las cantidades sumadas y agrupadas por pasillos del supermercado. Funciona sin conexión y guarda los datos solo en el dispositivo (IndexedDB); no hay cuentas ni servidor de datos.
+
+Hecha por Rubén Tur (https://github.com/Ruben-Tur), desarrollador web en Madrid. Interfaz en español de España.
+
+## Para quién y qué resuelve
+
+- Personas y familias que quieren decidir el menú de la semana de una vez y hacer una sola compra.
+- Evita apuntar a mano la lista: suma los ingredientes repetidos entre recetas (por ejemplo, 250 g + 1 kg de patatas = 1,25 kg) y los ordena por pasillos (Frutería, Carnicería, Pescadería, Lácteos y huevos, Despensa, Congelados…).
+- Pensada para el móvil en el supermercado: se instala como app y funciona sin cobertura.
+
+## Funciones
+
+- Recetario: crear, editar y borrar recetas con ingredientes (nombre, cantidad, unidad y pasillo). Incluye nueve recetas españolas de ejemplo (lentejas, paella, tortilla de patatas, merluza en salsa verde…).
+- Menú semanal: comida y cena de lunes a domingo, eligiendo receta y raciones para cada hueco.
+- Lista de la compra: se genera a partir del menú, escala las cantidades a las raciones, normaliza g/kg y ml/l, redondea las unidades hacia arriba y permite tachar productos (las marcas se guardan).
+- Copia de seguridad: exportar e importar todos los datos en un archivo JSON validado.
+- Privacidad: sin analítica ni servicios de terceros; los datos no salen del dispositivo.
+
+## Tecnología
+
+JavaScript sin frameworks (módulos ES), IndexedDB, Service Worker con caché versionada, manifiesto de aplicación web y CSS propio. Servidor estático mínimo en Node.js sin dependencias.
+
+## Enlaces
+
+- Aplicación: __SITE_URL__/
+- Código fuente: https://github.com/Ruben-Tur/menu-semanal

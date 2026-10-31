@@ -1,0 +1,15 @@
+{
+  "name": "menu-semanal",
+  "version": "1.0.0",
+  "description": "PWA para planificar el menú de la semana y generar la lista de la compra por pasillos. Funciona sin conexión.",
+  "type": "module",
+  "private": true,
+  "author": "Rubén Tur (https://github.com/Ruben-Tur)",
+  "engines": {
+    "node": ">=22.9"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env server.mjs",
+    "test": "node --test"
+  }
+}
