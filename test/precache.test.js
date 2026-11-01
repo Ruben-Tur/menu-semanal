@@ -9,7 +9,7 @@ const PUBLIC = path.resolve(import.meta.dirname, '../public');
 const sw = readFileSync(path.join(PUBLIC, 'sw.js'), 'utf8');
 const shell = JSON.parse(
   sw.match(/const APP_SHELL = (\[[\s\S]*?\]);/)[1].replace(/'/g, '"').replace(/,\s*\]/, ']'),
-);
+).map((url) => url.replace(/^\.\//, '/')); // relativas al service worker: './css/…' → '/css/…'
 
 // Archivos públicos que no hacen falta sin conexión (SEO, redes) o que no se cachean a sí mismos.
 const NOT_CACHED = new Set(['/sw.js', '/robots.txt', '/sitemap.xml', '/llms.txt', '/og.png', '/index.html']);

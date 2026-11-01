@@ -57,6 +57,8 @@ No hace falta `npm install`. Para cambiar el puerto o la URL pública, copia `.e
 
 > El service worker solo funciona en `localhost` o con HTTPS. Para probarla en el móvil hay que publicarla con HTTPS.
 
+Todas las rutas de la app (HTML, manifiesto y service worker) son relativas, así que también funciona dentro de una carpeta de otra web: el portfolio la sirve en `/demos/menu-semanal/` como archivos estáticos.
+
 ## Uso
 
 1. **Recetas:** revisa las de ejemplo o crea las tuyas con «Nueva receta». Las cantidades son para las raciones de la receta.

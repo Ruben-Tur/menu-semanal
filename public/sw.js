@@ -2,35 +2,38 @@
 // Al cambiar cualquier archivo de la lista hay que subir VERSION: así se crea una
 // caché nueva y la anterior se borra al activarse.
 
-const VERSION = '1.0.0';
+const VERSION = '1.1.0';
 const CACHE_PREFIX = 'menu-semanal-';
 const CACHE = `${CACHE_PREFIX}${VERSION}`;
+// Carpeta de la app: «/» con su servidor o, dentro del portfolio, «/demos/menu-semanal/».
+// Las rutas de APP_SHELL son relativas a esta carpeta.
+const SCOPE = new URL('./', self.location).pathname;
 
 const APP_SHELL = [
-  '/',
-  '/offline.html',
-  '/manifest.webmanifest',
-  '/css/styles.css',
-  '/js/app.js',
-  '/js/db.js',
-  '/js/dom.js',
-  '/js/install.js',
-  '/js/seed.js',
-  '/js/store.js',
-  '/js/lib/catalog.js',
-  '/js/lib/shopping.js',
-  '/js/lib/text.js',
-  '/js/lib/units.js',
-  '/js/lib/validate.js',
-  '/js/views/data.js',
-  '/js/views/plan.js',
-  '/js/views/recipes.js',
-  '/js/views/shopping.js',
-  '/icons/icon.svg',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
-  '/icons/icon-maskable-512.png',
-  '/icons/apple-touch-icon.png',
+  './',
+  './offline.html',
+  './manifest.webmanifest',
+  './css/styles.css',
+  './js/app.js',
+  './js/db.js',
+  './js/dom.js',
+  './js/install.js',
+  './js/seed.js',
+  './js/store.js',
+  './js/lib/catalog.js',
+  './js/lib/shopping.js',
+  './js/lib/text.js',
+  './js/lib/units.js',
+  './js/lib/validate.js',
+  './js/views/data.js',
+  './js/views/plan.js',
+  './js/views/recipes.js',
+  './js/views/shopping.js',
+  './icons/icon.svg',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-maskable-512.png',
+  './icons/apple-touch-icon.png',
 ];
 
 self.addEventListener('install', (event) => {
@@ -71,20 +74,20 @@ self.addEventListener('fetch', (event) => {
 });
 
 /**
- * Navegaciones: la app es una sola página, así que «/» sale siempre de la caché
+ * Navegaciones: la app es una sola página, así que la portada sale siempre de la caché
  * (arranca al instante aunque no haya red o la red sea muy lenta). Otras páginas
  * van a la red y, sin conexión, a la página de «Sin conexión».
  */
 async function handleNavigation(url) {
   const cache = await caches.open(CACHE);
-  if (url.pathname === '/' || url.pathname === '/index.html') {
-    const shell = await cache.match('/');
+  if (url.pathname === SCOPE || url.pathname === `${SCOPE}index.html`) {
+    const shell = await cache.match('./');
     if (shell) return shell;
   }
   try {
     return await fetch(url.href);
   } catch {
-    return (await cache.match(url.pathname)) ?? (await cache.match('/offline.html')) ?? Response.error();
+    return (await cache.match(url.pathname)) ?? (await cache.match('./offline.html')) ?? Response.error();
   }
 }
 
