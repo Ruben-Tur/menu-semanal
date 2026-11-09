@@ -35,8 +35,29 @@
   --radius-card: 10px;
   --nav-h: 3.75rem;
   --top-h: 3.5rem;
+  /* Relleno lateral del contenedor según los saltos de la web: escritorio (> 1440 px),
+     portátil (≤ 1440), tablet (≤ 1024) y móvil (≤ 767). */
+  --gutter: 100px;
 
   color-scheme: light;
+}
+
+@media (max-width: 1440px) {
+  :root {
+    --gutter: 80px;
+  }
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --gutter: 40px;
+  }
+}
+
+@media (max-width: 767px) {
+  :root {
+    --gutter: 20px;
+  }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -163,9 +184,10 @@ a:hover {
 
 .wrap {
   width: 100%;
-  max-width: 76rem;
+  /* El ancho útil sigue siendo 76rem: el relleno se suma por fuera. */
+  max-width: calc(76rem + 2 * var(--gutter));
   margin-inline: auto;
-  padding-inline: var(--s4);
+  padding-inline: var(--gutter);
 }
 
 .skip-link {
@@ -296,7 +318,7 @@ a:hover {
   outline-offset: -4px;
 }
 
-@media (min-width: 720px) {
+@media (min-width: 768px) {
   body {
     padding-bottom: 0;
   }
@@ -759,6 +781,7 @@ textarea.input {
   font-weight: 500;
   line-height: 1.25;
   overflow-wrap: anywhere;
+  hyphens: auto; /* en columnas estrechas, «Garban-zos» mejor que «Garbanzo|s» */
 }
 
 .slot-meta {
@@ -776,7 +799,7 @@ textarea.input {
 }
 
 /* Escritorio: la semana entera de un vistazo, un día por columna. */
-@media (min-width: 1024px) {
+@media (min-width: 1025px) {
   .week {
     grid-template-columns: repeat(7, minmax(0, 1fr));
     grid-template-rows: auto 1fr 1fr;
@@ -815,6 +838,8 @@ textarea.input {
 
   .slot {
     min-height: 7.5rem;
+    /* Columnas estrechas en portátil: menos relleno para que «Garbanzos» quepa entero. */
+    padding: var(--s2);
   }
 }
 
@@ -839,7 +864,7 @@ textarea.input {
   }
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1025px) {
   .recipe-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -1538,7 +1563,7 @@ textarea.input {
   transform: translate(-50%, 0);
 }
 
-@media (min-width: 720px) {
+@media (min-width: 768px) {
   .toast {
     bottom: var(--s5);
   }
@@ -1572,11 +1597,7 @@ textarea.input {
 
 /* ---------- Tablet y escritorio ---------- */
 
-@media (min-width: 720px) {
-  .wrap {
-    padding-inline: var(--s5);
-  }
-
+@media (min-width: 768px) {
   .day {
     grid-template-columns: 4rem minmax(0, 1fr) minmax(0, 1fr);
     padding: var(--s3);
@@ -1588,11 +1609,7 @@ textarea.input {
   }
 }
 
-@media (min-width: 1024px) {
-  .wrap {
-    padding-inline: var(--s6);
-  }
-
+@media (min-width: 1025px) {
   .day {
     grid-template-columns: none;
     padding: var(--s2);

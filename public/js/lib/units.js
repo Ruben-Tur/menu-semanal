@@ -31,7 +31,7 @@ export function roundForShopping(dim, value) {
       return Math.max(0.5, Math.round(value * 2) / 2);
     case 'masa':
     case 'volumen':
-      // Por encima de 1 kg/l se trabaja en décimas de kilo para no mostrar «1,237 kg».
+      // Por encima de 1 kg/l se redondea a 10 g/ml para no mostrar «1,237 kg» (sale «1,24 kg»).
       if (value >= 1000) return Math.round(value / 10) * 10;
       return Math.max(1, Math.round(value));
     default:

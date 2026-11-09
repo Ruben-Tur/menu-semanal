@@ -3,23 +3,25 @@
 import { STORES, transaction, request, getAll, get, put, remove, clear } from './db.js';
 import { sanitizeRecipe, sanitizeSlot, createBackup } from './lib/validate.js';
 import { compareEs } from './lib/text.js';
+import { SLOT_KEYS } from './lib/catalog.js';
 import { SEED_RECIPES, SEED_PLAN } from './seed.js';
 
 const newId = () => crypto.randomUUID();
 
-/** La primera vez que se abre la app carga las recetas y el menú de ejemplo. */
-export async function ensureSeeded() {
-  const seeded = await get(STORES.meta, 'seeded');
-  if (seeded) return false;
-  await transaction([STORES.recipes, STORES.plan, STORES.meta], 'readwrite', (s) => {
-    for (const raw of SEED_RECIPES) {
-      const { recipe } = sanitizeRecipe(raw);
-      s[STORES.recipes].put(recipe);
-    }
+/**
+ * La primera vez que se abre la app carga las recetas y el menú de ejemplo.
+ * Se comprueba y se carga en la misma transacción: si se abren dos pestañas a la
+ * vez, solo una carga los ejemplos (y no pisa lo que haya creado la otra).
+ */
+export function ensureSeeded() {
+  return transaction([STORES.recipes, STORES.plan, STORES.meta], 'readwrite', async (s) => {
+    const seeded = await request(s[STORES.meta].get('seeded'));
+    if (seeded) return false;
+    for (const raw of SEED_RECIPES) s[STORES.recipes].put(sanitizeRecipe(raw).recipe);
     for (const slot of SEED_PLAN) s[STORES.plan].put(slot);
     s[STORES.meta].put({ key: 'seeded', value: true });
+    return true;
   });
-  return true;
 }
 
 export async function listRecipes() {
@@ -55,7 +57,13 @@ export function deleteRecipe(id) {
   });
 }
 
-export const getPlan = () => getAll(STORES.plan);
+const SLOT_ORDER = new Map(SLOT_KEYS.map((key, i) => [key, i]));
+
+/** Huecos del menú en orden de la semana (IndexedDB los devuelve por orden alfabético). */
+export async function getPlan() {
+  const plan = await getAll(STORES.plan);
+  return plan.sort((a, b) => (SLOT_ORDER.get(a.slot) ?? 99) - (SLOT_ORDER.get(b.slot) ?? 99));
+}
 
 export async function setSlot(slot, recipeId, servings) {
   const recipe = await getRecipe(recipeId);
@@ -72,8 +80,19 @@ export async function getChecked() {
   return new Set(rows.map((r) => r.key));
 }
 
+// La misma clave (recortada) al marcar y al desmarcar; si no, una clave larga no se podría desmarcar.
+const checkedKey = (key) => String(key).slice(0, 200);
+
 export const setChecked = (key, checked) =>
-  checked ? put(STORES.checked, { key: String(key).slice(0, 200) }) : remove(STORES.checked, key);
+  checked ? put(STORES.checked, { key: checkedKey(key) }) : remove(STORES.checked, checkedKey(key));
+
+/** Quita las marcas de productos que ya no están en la lista (para que no reaparezcan tachados). */
+export function pruneChecked(keys) {
+  if (!keys.length) return Promise.resolve();
+  return transaction(STORES.checked, 'readwrite', (s) => {
+    for (const key of keys) s[STORES.checked].delete(key);
+  });
+}
 
 export const clearChecked = () => clear(STORES.checked);
 

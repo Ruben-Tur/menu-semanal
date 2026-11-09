@@ -1,5 +1,6 @@
 // Lista de la compra generada a partir del menú, agrupada por pasillos.
 import { buildShoppingList, shoppingListToText } from '../lib/shopping.js';
+import { ingredientKey } from '../lib/text.js';
 import { h, icon, mount, toast } from '../dom.js';
 import * as store from '../store.js';
 
@@ -22,12 +23,18 @@ export async function renderShopping(view) {
   // Solo cuentan las marcas de productos que siguen en la lista.
   const keys = new Set(list.groups.flatMap((g) => g.items.map((i) => i.key)));
   const done = new Set([...checked].filter((k) => keys.has(k)));
+  // Las marcas de productos que ya no están se borran: si no, al volver a planificar
+  // una receta con ese producto aparecería ya tachado.
+  store.pruneChecked([...checked].filter((k) => !keys.has(k))).catch(console.error);
 
   const progress = h('progress', { id: 'compra-progreso', class: 'progress', max: list.total, value: done.size });
   const counter = h('span', { class: 'mono' });
+  const uncheckBtn = h('button', { type: 'button', class: 'btn btn-ghost', on: { click: () => uncheckAll() } }, icon('x'), 'Desmarcar todo');
   const updateCounter = () => {
     progress.value = done.size;
     counter.textContent = `${done.size}/${list.total}`;
+    // Se actualiza al marcar: antes se quedaba desactivado si al entrar no había nada marcado.
+    uncheckBtn.disabled = done.size === 0;
     view.querySelector('.shopping')?.classList.toggle('is-complete', done.size === list.total);
   };
 
@@ -51,15 +58,20 @@ export async function renderShopping(view) {
 
   const share = async () => {
     const text = shoppingListToText(list, done);
-    try {
-      if (navigator.share) {
+    if (navigator.share) {
+      try {
         await navigator.share({ title: 'Lista de la compra', text });
         return;
+      } catch (error) {
+        if (error?.name === 'AbortError') return; // el usuario ha cerrado el panel
+        // Otros fallos (p. ej. el navegador no deja compartir): se copia al portapapeles.
       }
+    }
+    try {
       await navigator.clipboard.writeText(text);
       toast('Lista copiada: pégala donde quieras');
-    } catch (error) {
-      if (error?.name !== 'AbortError') toast('No se ha podido compartir la lista');
+    } catch {
+      toast('No se ha podido compartir la lista');
     }
   };
 
@@ -74,15 +86,16 @@ export async function renderShopping(view) {
     id: 'ocultar-marcados', type: 'checkbox', class: 'switch-input', checked: hideChecked,
     on: {
       change: async (e) => {
-        view.querySelector('.shopping').classList.toggle('hide-checked', e.currentTarget.checked);
-        await store.setHideChecked(e.currentTarget.checked);
+        const hide = e.currentTarget.checked;
+        view.querySelector('.shopping').classList.toggle('hide-checked', hide);
+        await store.setHideChecked(hide);
       },
     },
   });
 
   mount(view,
     head(list, [
-      h('button', { type: 'button', class: 'btn btn-ghost', on: { click: uncheckAll }, disabled: done.size === 0 }, icon('x'), 'Desmarcar todo'),
+      uncheckBtn,
       h('button', { type: 'button', class: 'btn btn-primary', on: { click: share } }, icon('share'), 'Compartir'),
     ]),
     h('div', { class: 'shopping-bar' },
@@ -93,7 +106,7 @@ export async function renderShopping(view) {
     h('div', { class: ['shopping', hideChecked && 'hide-checked'] },
       list.groups.map((group) => {
         const groupDone = group.items.every((i) => done.has(i.key));
-        const id = `pasillo-${group.aisle.toLowerCase().normalize('NFD').replace(/[^a-z]+/g, '-')}`;
+        const id = `pasillo-${ingredientKey(group.aisle).replace(/[^a-z]+/g, '-')}`; // «pasillo-lacteos-y-huevos»
         return h('section', { class: ['aisle', groupDone && 'is-done'], 'aria-labelledby': id, dataset: { aisle: group.aisle } },
           h('h3', { class: 'aisle-name', id },
             group.aisle,

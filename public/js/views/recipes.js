@@ -210,8 +210,11 @@ export async function renderRecipeForm(view, id = null) {
 
   const errorBox = h('div', { class: 'form-errors', role: 'alert', tabindex: '-1', hidden: true });
 
+  let saving = false;
   const submit = async (event) => {
     event.preventDefault();
+    // Un doble clic en «Crear receta» guardaba dos recetas iguales (cada envío crea un id nuevo).
+    if (saving) return;
     const form = event.currentTarget;
     const data = new FormData(form);
     const ingredients = [...rows.children].map((row) => ({
@@ -220,14 +223,27 @@ export async function renderRecipeForm(view, id = null) {
       unit: row.querySelector('[name="ing-unit"]').value,
       aisle: row.querySelector('[name="ing-aisle"]').value,
     }));
-    const result = await store.saveRecipe({
-      id: recipe?.id,
-      name: data.get('name'),
-      servings: data.get('servings'),
-      minutes: data.get('minutes'),
-      notes: data.get('notes'),
-      ingredients,
-    });
+    const submitBtn = form.querySelector('[type="submit"]');
+    saving = true;
+    submitBtn.disabled = true;
+    let result;
+    try {
+      result = await store.saveRecipe({
+        id: recipe?.id,
+        name: data.get('name'),
+        servings: data.get('servings'),
+        minutes: data.get('minutes'),
+        notes: data.get('notes'),
+        ingredients,
+      });
+    } catch (error) {
+      console.error(error);
+      toast('No se ha podido guardar la receta. Inténtalo de nuevo.');
+      return;
+    } finally {
+      saving = false;
+      submitBtn.disabled = false;
+    }
 
     for (const el of form.querySelectorAll('[aria-invalid]')) el.removeAttribute('aria-invalid');
     if (!result.ok) {

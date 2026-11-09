@@ -2,7 +2,7 @@
 // Al cambiar cualquier archivo de la lista hay que subir VERSION: así se crea una
 // caché nueva y la anterior se borra al activarse.
 
-const VERSION = '1.1.0';
+const VERSION = '1.2.0';
 const CACHE_PREFIX = 'menu-semanal-';
 const CACHE = `${CACHE_PREFIX}${VERSION}`;
 // Carpeta de la app: «/» con su servidor o, dentro del portfolio, «/demos/menu-semanal/».
@@ -64,10 +64,11 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
   const url = new URL(request.url);
-  if (url.origin !== self.location.origin) return;
+  // Solo lo de esta app: dentro del portfolio, el resto de la web no pasa por aquí.
+  if (url.origin !== self.location.origin || !url.pathname.startsWith(SCOPE)) return;
 
   if (request.mode === 'navigate') {
-    event.respondWith(handleNavigation(url));
+    event.respondWith(handleNavigation(request, url));
     return;
   }
   event.respondWith(cacheFirst(request));
@@ -78,22 +79,27 @@ self.addEventListener('fetch', (event) => {
  * (arranca al instante aunque no haya red o la red sea muy lenta). Otras páginas
  * van a la red y, sin conexión, a la página de «Sin conexión».
  */
-async function handleNavigation(url) {
+async function handleNavigation(request, url) {
   const cache = await caches.open(CACHE);
   if (url.pathname === SCOPE || url.pathname === `${SCOPE}index.html`) {
     const shell = await cache.match('./');
     if (shell) return shell;
   }
   try {
-    return await fetch(url.href);
+    return await fetch(request);
   } catch {
     return (await cache.match(url.pathname)) ?? (await cache.match('./offline.html')) ?? Response.error();
   }
 }
 
-/** Recursos: primero la caché; si no están, la red. */
+/**
+ * Recursos: primero la caché de esta versión; si no están, la red (sin guardar nada:
+ * solo se cachea la lista de APP_SHELL). Se busca solo en la caché propia y no con
+ * caches.match(), que mira todas las cachés del dominio (las del portfolio también).
+ */
 async function cacheFirst(request) {
-  const cached = await caches.match(request, { ignoreSearch: true });
+  const cache = await caches.open(CACHE);
+  const cached = await cache.match(request, { ignoreSearch: true });
   if (cached) return cached;
   try {
     return await fetch(request);

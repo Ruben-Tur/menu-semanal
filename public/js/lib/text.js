@@ -30,7 +30,7 @@ export function cleanMultiline(value, max) {
 export function ingredientKey(name) {
   return cleanLine(name, 200)
     .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
+    .replace(/\p{M}/gu, '') // quita las tildes que NFD deja separadas
     .toLowerCase();
 }
 

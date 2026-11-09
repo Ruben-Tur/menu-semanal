@@ -16,9 +16,10 @@ export function parseQuantity(value) {
   const text = String(value).trim().replace(',', '.');
   if (text === '') return { ok: true, value: null };
   if (!/^\d+(\.\d+)?$/.test(text)) return { ok: false };
-  const n = Number(text);
+  // Se redondea antes de comprobar: «0,0001» quedaría en 0 y se guardaría como «al gusto».
+  const n = Math.round(Number(text) * 1000) / 1000;
   if (!Number.isFinite(n) || n <= 0 || n > LIMITS.quantityMax) return { ok: false };
-  return { ok: true, value: Math.round(n * 1000) / 1000 };
+  return { ok: true, value: n };
 }
 
 function parseInteger(value, min, max) {

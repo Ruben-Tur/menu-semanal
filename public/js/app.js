@@ -41,24 +41,30 @@ async function route() {
   });
 
   if (!match) {
+    view.removeAttribute('aria-busy');
     mount(view,
       h('h2', { class: 'view-title', tabindex: '-1', text: 'Esta página no existe' }),
       h('p', { class: 'notice' }, 'Vuelve a ', h('a', { href: '#/semana', text: 'la semana' }), '.'));
+    document.title = `Página no encontrada · ${BASE_TITLE}`;
     return;
   }
 
+  // Cada vista se pinta en su propio contenedor y solo se muestra si sigue siendo la
+  // última pedida: si se cambia de pestaña rápido, una vista lenta (p. ej. «Tus datos»)
+  // ya no puede terminar después y tapar la vista actual.
+  const page = document.createElement('div');
   view.setAttribute('aria-busy', 'true');
   try {
-    await match.r.render(view, match.m[1]);
+    await match.r.render(page, match.m[1]);
   } catch (error) {
     console.error(error);
-    mount(view,
+    mount(page,
       h('h2', { class: 'view-title', tabindex: '-1', text: 'Algo ha fallado' }),
       h('p', { class: 'notice', text: 'No se han podido leer los datos de este dispositivo. Recarga la página para intentarlo de nuevo.' }));
-  } finally {
-    view.removeAttribute('aria-busy');
   }
   if (seq !== renderSeq) return;
+  view.removeAttribute('aria-busy');
+  mount(view, page);
 
   const heading = view.querySelector('.view-title');
   if (match.r.nav === 'semana') document.title = HOME_TITLE;
@@ -70,6 +76,13 @@ async function route() {
   }
   firstRender = false;
 }
+
+// Red de seguridad: si falla al guardar algo que no tiene su propio aviso
+// (IndexedDB llena, bloqueada…), al menos se le dice al usuario.
+window.addEventListener('unhandledrejection', (event) => {
+  console.error(event.reason);
+  toast('No se ha podido guardar el cambio. Inténtalo de nuevo.');
+});
 
 function watchConnection() {
   const badge = document.getElementById('estado-conexion');

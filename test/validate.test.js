@@ -24,6 +24,9 @@ test('parseQuantity acepta coma decimal y vacío', () => {
   assert.equal(parseQuantity('0').ok, false);
   assert.equal(parseQuantity('1e9').ok, false);
   assert.equal(parseQuantity('dos').ok, false);
+  // Lo que se redondearía a 0 no se acepta (se guardaría como «al gusto»).
+  assert.equal(parseQuantity('0,0001').ok, false);
+  assert.deepEqual(parseQuantity('0,0005'), { ok: true, value: 0.001 });
 });
 
 test('sanitizeRecipe limpia y descarta filas vacías', () => {

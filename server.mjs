@@ -96,7 +96,8 @@ async function resolveFile(pathname) {
   } catch {
     return null;
   }
-  if (decoded.includes('\0') || decoded.includes('\\')) return null;
+  // «:» tampoco: en Windows abre flujos alternativos de NTFS («index.html::$DATA») o unidades («C:»).
+  if (decoded.includes('\0') || decoded.includes('\\') || decoded.includes(':')) return null;
   // Nada de archivos o carpetas ocultos (.git, .env…).
   if (decoded.split('/').some((part) => part.startsWith('.'))) return null;
   if (decoded.endsWith('/')) decoded += 'index.html';
@@ -123,9 +124,17 @@ const server = http.createServer({ maxHeaderSize: 8 * 1024 }, async (req, res) =
       return sendText(res, 429, 'Demasiadas peticiones. Espera un minuto.', { 'Retry-After': '60' });
     }
     if ((req.url ?? '').length > MAX_URL_LENGTH) return sendText(res, 414, 'URL demasiado larga');
-    if (Number(req.headers['content-length'] ?? 0) > 0) return sendText(res, 413, 'Esta web no acepta datos');
+    if (Number(req.headers['content-length'] ?? 0) > 0 || req.headers['transfer-encoding']) {
+      return sendText(res, 413, 'Esta web no acepta datos');
+    }
 
-    const { pathname } = new URL(req.url ?? '/', 'http://localhost');
+    let pathname;
+    try {
+      // Una URL que no se puede analizar es un error del cliente (400), no del servidor (500).
+      ({ pathname } = new URL(req.url ?? '/', 'http://localhost'));
+    } catch {
+      return sendText(res, 400, 'Petición no válida');
+    }
     const found = await resolveFile(pathname);
     if (!found) return sendText(res, 404, 'No encontrado');
 

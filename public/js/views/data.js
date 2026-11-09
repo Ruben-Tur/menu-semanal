@@ -11,8 +11,7 @@ const MAX_IMPORT_BYTES = 2 * 1024 * 1024;
 const today = () => new Date().toISOString().slice(0, 10);
 
 export async function renderData(view) {
-  const recipes = await store.listRecipes();
-  const plan = await store.getPlan();
+  const [recipes, plan] = await Promise.all([store.listRecipes(), store.getPlan()]);
   const rerender = () => renderData(view);
 
   const exportBackup = async () => {
@@ -91,11 +90,13 @@ export async function renderData(view) {
   // Almacenamiento: cuánto ocupa y si el navegador lo protege de la limpieza automática.
   const storageInfo = h('p', { class: 'muted mono small' });
   const persistBtn = h('button', { type: 'button', class: 'btn btn-ghost', hidden: true }, 'Proteger del borrado automático');
-  if (navigator.storage?.estimate) {
-    const [{ usage = 0 }, persisted] = await Promise.all([
-      navigator.storage.estimate(),
-      navigator.storage.persisted?.() ?? false,
-    ]);
+  // Si el navegador no da estos datos (algunos modos privados fallan aquí), la vista se pinta igual.
+  const storage = await Promise.all([
+    navigator.storage?.estimate?.(),
+    navigator.storage?.persisted?.() ?? false,
+  ]).catch(() => null);
+  if (storage?.[0]) {
+    const [{ usage = 0 }, persisted] = storage;
     storageInfo.textContent = `Ocupa ${formatNumber(usage / 1024)} KB · ${persisted ? 'protegido del borrado automático' : 'el navegador podría borrarlo si se queda sin espacio'}`;
     if (!persisted && navigator.storage.persist) {
       persistBtn.hidden = false;

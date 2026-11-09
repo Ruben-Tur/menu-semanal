@@ -20,12 +20,18 @@ export async function renderPlan(view) {
     const current = bySlot.get(key);
     const result = await pickRecipe({ day, meal, recipes, current });
     if (!result) return;
-    if (result.action === 'clear') {
-      await store.clearSlot(key);
-      toast(`${day.name}, ${meal.name.toLowerCase()}: hueco libre`);
-    } else {
-      await store.setSlot(key, result.recipeId, result.servings);
-      toast(`${day.name}, ${meal.name.toLowerCase()}: ${byId.get(result.recipeId).name}`);
+    try {
+      if (result.action === 'clear') {
+        await store.clearSlot(key);
+        toast(`${day.name}, ${meal.name.toLowerCase()}: hueco libre`);
+      } else {
+        await store.setSlot(key, result.recipeId, result.servings);
+        toast(`${day.name}, ${meal.name.toLowerCase()}: ${byId.get(result.recipeId).name}`);
+      }
+    } catch (error) {
+      // Por ejemplo, si la receta se ha borrado desde otra pestaña.
+      console.error(error);
+      toast('No se ha podido guardar. La receta puede haberse borrado en otra pestaña.');
     }
     await rerender();
     view.querySelector(`[data-slot="${key}"]`)?.focus();

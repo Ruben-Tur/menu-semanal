@@ -101,7 +101,12 @@ export function openDialog({ label, className = '', build }) {
       result = value;
       dialog.close();
     };
+    // Si se cambia de vista con el diálogo abierto (un enlace de dentro, el botón
+    // «Atrás»), se cierra: si no, se quedaría encima de la vista nueva.
+    const onHashChange = () => close(null);
+    window.addEventListener('hashchange', onHashChange);
     dialog.addEventListener('close', () => {
+      window.removeEventListener('hashchange', onHashChange);
       dialog.remove();
       resolve(result);
     });
@@ -115,7 +120,10 @@ export function openDialog({ label, className = '', build }) {
   });
 }
 
-/** Confirmación con botones propios. Devuelve `true` si se acepta. */
+/**
+ * Confirmación con botones propios. Devuelve `true` si se acepta. En las acciones
+ * peligrosas el foco empieza en «Cancelar», para que un Intro sin mirar no borre nada.
+ */
 export async function confirmDialog({ title, body, confirmText = 'Aceptar', danger = false }) {
   const result = await openDialog({
     label: title,
@@ -124,8 +132,8 @@ export async function confirmDialog({ title, body, confirmText = 'Aceptar', dang
         h('h2', { class: 'dialog-title', text: title }),
         ...[].concat(body).map((p) => h('p', { class: 'dialog-text', text: p })),
         h('div', { class: 'dialog-actions' },
-          h('button', { type: 'button', class: 'btn btn-ghost', text: 'Cancelar', on: { click: () => close(null) } }),
-          h('button', { type: 'submit', class: ['btn', danger ? 'btn-danger' : 'btn-primary'], text: confirmText, autofocus: true }),
+          h('button', { type: 'button', class: 'btn btn-ghost', text: 'Cancelar', autofocus: danger, on: { click: () => close(null) } }),
+          h('button', { type: 'submit', class: ['btn', danger ? 'btn-danger' : 'btn-primary'], text: confirmText, autofocus: !danger }),
         ),
       ),
   });

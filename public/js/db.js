@@ -2,6 +2,7 @@
 // en el propio navegador: no hay servidor de datos.
 
 const DB_NAME = 'menu-semanal';
+// Al subir la versión, añade la migración en `upgrade()` según `oldVersion`.
 const DB_VERSION = 1;
 
 export const STORES = {
@@ -11,7 +12,7 @@ export const STORES = {
   meta: 'ajustes', // { key, value }
 };
 
-let dbPromise;
+let dbPromise = null;
 
 /** Convierte una IDBRequest en promesa. */
 const request = (req) =>
@@ -20,24 +21,37 @@ const request = (req) =>
     req.onerror = () => reject(req.error);
   });
 
+function upgrade(db, oldVersion) {
+  if (oldVersion < 1) {
+    db.createObjectStore(STORES.recipes, { keyPath: 'id' });
+    db.createObjectStore(STORES.plan, { keyPath: 'slot' });
+    db.createObjectStore(STORES.checked, { keyPath: 'key' });
+    db.createObjectStore(STORES.meta, { keyPath: 'key' });
+  }
+}
+
 export function openDb() {
   dbPromise ??= new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
-    req.onupgradeneeded = () => {
-      const db = req.result;
-      if (!db.objectStoreNames.contains(STORES.recipes)) db.createObjectStore(STORES.recipes, { keyPath: 'id' });
-      if (!db.objectStoreNames.contains(STORES.plan)) db.createObjectStore(STORES.plan, { keyPath: 'slot' });
-      if (!db.objectStoreNames.contains(STORES.checked)) db.createObjectStore(STORES.checked, { keyPath: 'key' });
-      if (!db.objectStoreNames.contains(STORES.meta)) db.createObjectStore(STORES.meta, { keyPath: 'key' });
-    };
+    req.onupgradeneeded = (event) => upgrade(req.result, event.oldVersion);
     req.onsuccess = () => {
       const db = req.result;
-      // Si otra pestaña abre una versión nueva de la base de datos, cerramos esta conexión.
-      db.onversionchange = () => db.close();
+      // Si otra pestaña abre una versión nueva de la base de datos (o el navegador
+      // cierra la conexión), la soltamos y la siguiente operación abre otra.
+      db.onversionchange = () => {
+        db.close();
+        dbPromise = null;
+      };
+      db.onclose = () => { dbPromise = null; };
       resolve(db);
     };
-    req.onerror = () => reject(req.error);
-    req.onblocked = () => reject(new Error('La base de datos está bloqueada por otra pestaña.'));
+    req.onerror = () => {
+      // No se guarda el fallo: el siguiente intento vuelve a abrir la base de datos.
+      dbPromise = null;
+      reject(req.error);
+    };
+    // «blocked» no es un error: la apertura sigue en cuanto la otra pestaña cierre su conexión.
+    req.onblocked = () => console.warn('IndexedDB: esperando a que otra pestaña cierre la base de datos.');
   });
   return dbPromise;
 }
@@ -51,15 +65,16 @@ export async function transaction(storeNames, mode, fn) {
   const names = Array.isArray(storeNames) ? storeNames : [storeNames];
   const tx = db.transaction(names, mode);
   const stores = Object.fromEntries(names.map((n) => [n, tx.objectStore(n)]));
+  // Un error en una petición siempre termina en «abort», que trae el motivo en tx.error.
   const done = new Promise((resolve, reject) => {
     tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error);
     tx.onabort = () => reject(tx.error ?? new Error('Transacción cancelada.'));
   });
   let result;
   try {
     result = await fn(stores, tx);
   } catch (error) {
+    done.catch(() => {}); // ya devolvemos `error`: evita un rechazo sin capturar
     try { tx.abort(); } catch { /* ya terminada */ }
     throw error;
   }
